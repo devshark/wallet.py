@@ -1,0 +1,28 @@
+services:
+ db:
+   image: postgres:16-alpine
+   platform: linux/amd64
+   volumes:
+     - postgres_data:/var/lib/postgresql/data
+   env_file:
+     - postgres.env.local
+   healthcheck:
+     test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+     interval: 10s
+     timeout: 5s
+     retries: 5
+ 
+ django-web:
+   build: .
+   image: django:latest
+   platform: linux/amd64
+   container_name: django-docker
+   ports:
+     - "8000:8000"
+   depends_on:
+     db:
+       condition: service_healthy
+   env_file:
+     - .env
+volumes:
+   postgres_data:
